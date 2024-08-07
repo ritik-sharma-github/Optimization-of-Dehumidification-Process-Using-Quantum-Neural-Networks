@@ -1,100 +1,337 @@
-Sure, let’s delve deeper into each step with more detailed explanations:
 
----
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
-### **1. Data Collection and Preparation**
+df=pd.read_excel("/content/Temperature Dataset.xlsx")
 
-**Description:**
+df
 
-The project began with collecting a comprehensive dataset that captures various features pertinent to the dehumidification process. This dataset was crucial for building a predictive model. Data preparation involved several key tasks:
+# Display summary statistics for the DataFrame
+print("\nSummary statistics:")
+df.describe()
 
-- **Data Collection:** Gathering raw data from relevant sources, ensuring it includes all necessary variables such as temperature, humidity, and any other relevant metrics.
-  
-- **Data Cleaning:** Addressing issues like missing values, outliers, and inconsistencies in the dataset. This step is vital to ensure that the model is trained on high-quality data. Techniques such as imputation for missing values and filtering outliers were applied.
+# Check for missing values
+print("\nMissing values:")
+print(df.isnull().sum())
 
-- **Feature Selection:** Identifying and selecting the most important features that significantly influence the prediction outcomes. This process helps in reducing the dimensionality of the data and focusing on the most relevant inputs.
+# Display the column names
+print("\nColumn names:")
+print(df.columns)
 
-### **2. Data Preprocessing**
+# Basic data types info
+print("\nData types:")
+print(df.dtypes)
 
-**Description:**
+# Convert specific columns from int to float
+columns_to_convert = ['tc (s)']
+df[columns_to_convert] = df[columns_to_convert].astype(float)
 
-Data preprocessing prepares the dataset for training the model by transforming and normalizing the data:
+# Check the updated data types
+print(df.dtypes)
 
-- **Normalization:** Scaling the features to a standard range, often using techniques like z-score normalization or Min-Max scaling. This process ensures that all features contribute equally to the model's learning process and helps in achieving better convergence during training.
+import seaborn as sns
 
-- **Data Splitting:** Dividing the dataset into training and testing subsets. The training set is used to train the model, while the testing set is reserved for evaluating the model's performance. This split helps in assessing the model’s ability to generalize to new, unseen data.
+# Compute the correlation matrix
+correlation_matrix = df.corr()
 
-### **3. Quantum Layer Setup**
+# Display the correlation matrix
+print("\nCorrelation matrix:")
+print(correlation_matrix)
 
-**Description:**
+# Plot the correlation matrix
+plt.figure(figsize=(12, 10))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5)
+plt.title('Correlation Matrix')
+plt.show()
 
-This step focuses on integrating quantum computing elements into the model:
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
-- **Quantum Circuit Design:** Constructing a quantum circuit with a specific number of qubits. In this project, three qubits were used to match the number of input features. The design of the circuit involves defining how quantum gates will manipulate the qubits.
 
-- **AngleEmbedding:** Encoding classical data into quantum states by applying angle parameters to the qubits. This step transforms classical input features into quantum representations that can be processed by quantum algorithms.
+# Define features and target variables
+X = df[[ 'Twi (℃)', 'Tai (℃)', 'Wai (g/kg)']]
+y = df[['Two (℃)']]
 
-- **StronglyEntanglingLayers:** Implementing quantum gates that create entanglement between qubits. This process introduces complex quantum interactions that enhance the model's capacity to learn intricate patterns and relationships in the data.
+# Normalize the data
+scaler_X = StandardScaler()
+scaler_y = StandardScaler()
 
-### **4. Model Construction**
+X_scaled = scaler_X.fit_transform(X)
+y_scaled = scaler_y.fit_transform(y)
 
-**Description:**
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y_scaled, test_size=0.2, random_state=42)
 
-Constructing the Quantum Neural Network (QNN) involves combining classical and quantum components:
+import pennylane as qml
+from pennylane import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import Adam
 
-- **Classical Neural Network Layers:** Adding dense layers that process the output from the quantum circuit. These layers are responsible for further processing and learning from the quantum-enhanced features.
+# Set up the quantum device
+n_qubits = 3  # Number of qubits matching the number of features
+dev = qml.device('default.qubit', wires=n_qubits)
 
-- **Quantum Layers:** Integrating the quantum components, such as `AngleEmbedding` and `StronglyEntanglingLayers`, into the model. These layers handle the quantum data processing and contribute to the overall model's predictive power.
+# Define a quantum layer
+@qml.qnode(dev, interface='tf')
+def quantum_layer(inputs, weights):
+    qml.templates.AngleEmbedding(inputs, wires=range(n_qubits)) # AngleEmbedding applies an n_qubit parameterized rotation to the n wires
+    qml.templates.StronglyEntanglingLayers(weights, wires=range(n_qubits))
+    return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
 
-- **Custom Loss Function:** Defining a Root Mean Squared Error (RMSE) loss function tailored to evaluate the model’s accuracy. RMSE measures the average magnitude of prediction errors, focusing on minimizing discrepancies between predicted and actual values.
+weight_shapes = {'weights': (3, n_qubits, 3)}
 
-### **5. Model Compilation**
+# Define a custom RMSE loss function
+def rmse(y_true, y_pred):
+    return tf.sqrt(tf.reduce_mean(tf.square(y_true - y_pred)))
 
-**Description:**
+# Build the hybrid QNN model
+def create_hybrid_model():
+    model = Sequential()
+    model.add(tf.keras.layers.Input(shape=(X_train.shape[1],)))
+    model.add(Dense(n_qubits, activation='relu')) # Adjust the number of neurons in the dense layer to match n_qubits
+    model.add(qml.qnn.KerasLayer(quantum_layer, weight_shapes, output_dim=n_qubits)) # Output dimension should match the number of qubits
+    model.add(Dense(1))  # Output layer for predicting 'Two (℃)'
+    return model
 
-Compiling the model involves configuring the training process:
+# Compile the model with the custom RMSE loss function
+model = create_hybrid_model()
+model.compile(optimizer=Adam(learning_rate=0.01), loss=rmse)
 
-- **Optimizer Selection:** Choosing an optimization algorithm (e.g., Adam, SGD) that adjusts the model’s weights based on the loss function. The optimizer plays a crucial role in improving the model's performance during training.
+# Train the model
+history = model.fit(X_train, y_train, epochs=100, batch_size=64, validation_data=(X_test, y_test))
 
-- **Loss Function Integration:** Incorporating the custom RMSE loss function into the model. This loss function guides the optimization process by penalizing larger prediction errors more heavily.
+# Evaluate the model
+test_loss = model.evaluate(X_test, y_test, batch_size=64)
+print(f"Test RMSE: {test_loss}")
 
-### **6. Model Training**
+# Predict and inverse transform the results
+y_pred_scaled = model.predict(X_test)
+y_pred = scaler_y.inverse_transform(y_pred_scaled)
+y_test = scaler_y.inverse_transform(y_test)
 
-**Description:**
+# Compare actual and predicted values
+comparison = pd.DataFrame({'Actual Two (℃)': y_test[:, 0], 'Predicted Two (℃)': y_pred[:, 0],})
+print(comparison)
 
-Training the model involves fitting it to the training data:
+import numpy as np
+import pandas as pd
 
-- **Training Process:** Iterating through the dataset multiple times (epochs) to adjust the model’s parameters. During each iteration, the model learns from the data by updating its weights to minimize the loss function.
+# Actual values
+actual_values = np.array([
+    [27.5],
+    [25.0],
+    [25.7],
+    [28.5],
+    [27.0],
+    [26.2],
+    [26.5],
+    [23.0],
+    [26.4],
+    [32.5],
+    [28.5],
+    [22.0]
+])
 
-- **Monitoring Progress:** Tracking the model’s performance on the training data to ensure it is learning effectively. Metrics like training loss and accuracy are monitored to gauge progress.
+# Predicted values (updated)
+predicted_values = np.array([
+    [28.714415],
+    [22.782198],
+    [26.672234],
+    [27.867586],
+    [27.946274],
+    [27.370394],
+    [28.279718],
+    [22.533247],
+    [26.173168],
+    [31.004097],
+    [28.773884],
+    [21.190441]
+])
 
-### **7. Model Evaluation**
+# Compute error percentage
+error_percentage = np.abs((actual_values - predicted_values) / actual_values) * 100
 
-**Description:**
+# Convert to DataFrame for better readability
+error_df = pd.DataFrame(error_percentage, columns=['Two (℃) Error (%)'])
 
-Evaluating the model involves assessing its performance on unseen data:
+print(error_df)
 
-- **Testing Data:** Using the reserved testing set to evaluate the model’s generalization ability. This step checks how well the model performs on new data it has not seen during training.
+import matplotlib.pyplot as plt
+import numpy as np
 
-- **Evaluation Metrics:** Measuring the model’s performance using metrics such as RMSE. These metrics provide insights into the model’s accuracy and help identify any potential improvements.
+# Actual values
+y_test = np.array([
+    [27.5],
+    [25.0],
+    [25.7],
+    [28.5],
+    [27.0],
+    [26.2],
+    [26.5],
+    [23.0],
+    [26.4],
+    [32.5],
+    [28.5],
+    [22.0]
+])
 
-### **8. Predictions and Results Analysis**
+# Predicted values
+y_pred = np.array([
+    [28.714415],
+    [22.782198],
+    [26.672234],
+    [27.867586],
+    [27.946274],
+    [27.370394],
+    [28.279718],
+    [22.533247],
+    [26.173168],
+    [31.004097],
+    [28.773884],
+    [21.190441]
+])
 
-**Description:**
+# Plot for Two (℃)
+plt.figure(figsize=(12, 6))
+plt.plot(y_test[:, 0], label='Actual Two (℃)')
+plt.plot(y_pred[:, 0], label='Predicted Two (℃)', linestyle='--')
+plt.xlabel('Sample')
+plt.ylabel('Two (℃)')
+plt.title('Actual vs Predicted - Two (℃)')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
 
-This step focuses on interpreting the model’s outputs:
+import matplotlib.pyplot as plt
 
-- **Making Predictions:** Using the trained model to predict outcomes on new or test data. The predictions are generated based on the patterns learned during training.
+# Plot training & validation loss values
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Model loss')
+plt.ylabel('Loss (RMSE)')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Validation'], loc='upper right')
+plt.show()
 
-- **Results Analysis:** Comparing predicted values to actual values to assess accuracy. Visualization techniques, such as plotting predicted vs. actual values, help in understanding how well the model performs.
+from sklearn.metrics import mean_absolute_error, r2_score
 
-### **9. Model Optimization**
+# Calculate MAE and R2 Score
+mae = mean_absolute_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
 
-**Description:**
+print(f"Mean Absolute Error (MAE): {mae}")
+print(f"R2 Score: {r2}")
 
-Optimizing the model involves refining it for better performance:
+import matplotlib.pyplot as plt
 
-- **Hyperparameter Tuning:** Adjusting various parameters of the model, such as learning rate or number of epochs, to enhance performance. Techniques like grid search or random search may be used for this purpose.
+# Residual errors (errors between actual and predicted values)
+residuals = y_test - y_pred
+residuals
 
-- **Model Refinement:** Modifying the quantum circuit design or neural network architecture based on evaluation results. This could involve changing the number of qubits or layers to improve the model’s predictive capabilities.
+# Plot for Two (℃)
+plt.figure(figsize=(12, 6))
+plt.plot(residuals[:, 0], label='Residuals Two (℃)')
+plt.xlabel('Sample')
+plt.ylabel('Residual (℃)')
+plt.title('Residuals - Two (℃)')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
 
+residuals
+
+plt.figure(figsize=(10, 6))
+plt.plot(y_test, label='Actual')
+plt.plot(y_pred, label='Predicted')
+plt.title('Actual vs Predicted')
+plt.xlabel('Sample Index')
+plt.ylabel('Value')
+plt.legend()
+plt.show()
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+
+# Define your data
+data = {
+    'Twi (℃)': [25, 25, 30, 20, 30, 20, 30, 25],
+    'Tai (℃)': [30, 27, 35, 26, 30, 26, 33, 32],
+    'Wai (g/kg)': [21.5, 18, 23.2, 13, 21.5, 18, 12.5, 23],
+    'Two (℃)': [27.5, 25.95, 32, 22, 32, 25, 34, 27]
+}
+
+df = pd.DataFrame(data)
+
+# Define features and target variables
+X = df[['Twi (℃)', 'Tai (℃)', 'Wai (g/kg)']]
+y = df[['Two (℃)']]
+
+# Normalize the data
+scaler_X = StandardScaler()
+scaler_y = StandardScaler()
+
+X_scaled = scaler_X.fit_transform(X)
+y_scaled = scaler_y.fit_transform(y)
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y_scaled, test_size=0.2, random_state=42)
+
+# Define the custom equation layer
+class CustomEquationLayer(Layer):
+    def __init__(self, a=1.0, b=0.0, **kwargs):
+        super(CustomEquationLayer, self).__init__(**kwargs)
+        self.a = a
+        self.b = b
+
+    def build(self, input_shape):
+        self.a = self.add_weight(name='a', shape=[], initializer='uniform', trainable=True)
+        self.b = self.add_weight(name='b', shape=[], initializer='zeros', trainable=True)
+        super(CustomEquationLayer, self).build(input_shape)
+
+    def call(self, inputs):
+        return self.a * inputs + self.b
+
+    def get_config(self):
+        config = super(CustomEquationLayer, self).get_config()
+        config.update({'a': self.a, 'b': self.b})
+        return config
+
+# Build the model
+def create_model():
+    model = Sequential()
+    model.add(tf.keras.layers.Input(shape=(X_train.shape[1],)))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(64, activation='relu'))
+    model.add(CustomEquationLayer())  # Custom layer with your equation
+    model.add(Dense(1))  # Output layer for predicting 'Two (℃)'
+    return model
+
+# Compile the model
+model = create_model()
+model.compile(optimizer='adam', loss='mean_squared_error')
+
+# Train the model
+history = model.fit(X_train, y_train, epochs=100, batch_size=1, validation_data=(X_test, y_test))
+
+# Evaluate the model
+test_loss = model.evaluate(X_test, y_test, batch_size=1)
+print(f"Test Loss (MSE): {test_loss}")
+
+# Predict and inverse transform the results
+y_pred_scaled = model.predict(X_test)
+y_pred = scaler_y.inverse_transform(y_pred_scaled)
+y_test = scaler_y.inverse_transform(y_test)
+
+# Compare actual and predicted values
+comparison = pd.DataFrame({'Actual Two (℃)': y_test[:, 0], 'Predicted Two (℃)': y_pred[:, 0]})
+print(comparison)
