@@ -87,6 +87,13 @@ This step focuses on interpreting the model’s outputs:
 
 - **Results Analysis:** Comparing predicted values to actual values to assess accuracy. Visualization techniques, such as plotting predicted vs. actual values, help in understanding how well the model performs.
 
+
+![1](https://github.com/user-attachments/assets/6b00f46d-3bfc-4900-968c-e1d607dd65ef)
+
+![2 1](https://github.com/user-attachments/assets/8b35f4ae-14ea-43e8-a771-f21c84916a7e)
+
+![download (16)](https://github.com/user-attachments/assets/727da1d7-6de6-4dc4-bcf2-03fac44c15eb)
+
 ### **9. Model Optimization**
 
 
@@ -95,3 +102,10 @@ Optimizing the model involves refining it for better performance:
 - **Hyperparameter Tuning:** Adjusting various parameters of the model, such as learning rate or number of epochs, to enhance performance. Techniques like grid search or random search may be used for this purpose.
 
 - **Model Refinement:** Modifying the quantum circuit design or neural network architecture based on evaluation results. This could involve changing the number of qubits or layers to improve the model’s predictive capabilities.
+
+- ![download (17)](https://github.com/user-attachments/assets/08beccec-96b3-42ce-b840-1bb58a679844)
+
+-![2 2](https://github.com/user-attachments/assets/702258ab-1edb-404e-80c4-5044c45f7689)
+
+![2 3](https://github.com/user-attachments/assets/86bdfb77-67ed-4c18-a6e6-bfb115f32324)
+
