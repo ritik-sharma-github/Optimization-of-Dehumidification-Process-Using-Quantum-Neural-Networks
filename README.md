@@ -2,11 +2,40 @@ Quantum neural networks (QNNs) process input using qubits, the fundamental compo
 
 ### **1. Data Collection and Preparation**
 
-The project began with collecting a comprehensive dataset that captures various features pertinent to the dehumidification process. This dataset was crucial for building a predictive model. Data preparation involved several key tasks:
+Due to the privacy of the data, I'm unable to share the dataset directly. The project began with collecting a comprehensive dataset that captures various features pertinent to the dehumidification process. This dataset was crucial for building a predictive model. Data preparation involved several key tasks:
 
 - **Data Collection:** Gathering raw data from relevant sources, ensuring it includes all necessary variables such as temperature, humidity, and any other relevant metrics.
   
+However, here is a detailed description of the dataset attributes:
+
+- **δd (mm)**: Represents the thickness of the desiccant layer used in the system, measured in millimeters. This variable affects the efficiency of the dehumidification process.
+  
+- **L (mm)**: Denotes the length of the desiccant layer in millimeters. It is crucial for understanding the surface area available for moisture absorption.
+
+- **d (mm)**: The diameter of the desiccant particles in millimeters, which influences the overall performance of the dehumidification process.
+
+- **x (mm)**: A parameter representing the distance or spacing within the system, measured in millimeters, which can impact airflow and system efficiency.
+
+- **Twi (℃)**: The inlet temperature of the air stream, measured in degrees Celsius. This variable affects the capacity of the desiccant to absorb moisture.
+
+- **Tai (℃)**: The ambient air temperature surrounding the system, measured in degrees Celsius, which influences the system's performance.
+
+- **Wai (g/kg)**: The humidity of the inlet air stream, measured in grams per kilogram. This is a key factor in determining how much moisture needs to be removed.
+
+- **ṁa (kg/s)**: The mass flow rate of the air stream, measured in kilograms per second. This variable affects the rate at which air is processed through the system.
+
+- **tc (s)**: The cycle time or operational duration of the system, measured in seconds. This parameter is important for understanding the system's operation over time.
+
+- **Two (℃)**: The temperature of the air stream exiting the system, measured in degrees Celsius. It helps in assessing the cooling or heating effect of the dehumidification process.
+
+- **Tao (℃)**: The ambient temperature at the outlet, measured in degrees Celsius, which can provide additional context on the system's thermal performance.
+
+- **Wao (g/kg)**: The humidity of the air stream exiting the system, measured in grams per kilogram. This value is crucial for evaluating the effectiveness of the dehumidification process.
+
+These attributes provide comprehensive information about the operational conditions and performance of the dehumidification system, allowing for in-depth analysis and optimization.
+
 - **Data Cleaning:** Addressing issues like missing values, outliers, and inconsistencies in the dataset. This step is vital to ensure that the model is trained on high-quality data. Techniques such as imputation for missing values and filtering outliers were applied.
+
 
 - **Feature Selection:** Identifying and selecting the most important features that significantly influence the prediction outcomes. This process helps in reducing the dimensionality of the data and focusing on the most relevant inputs.
 
