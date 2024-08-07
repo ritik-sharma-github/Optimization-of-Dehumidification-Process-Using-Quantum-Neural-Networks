@@ -29,6 +29,16 @@ This step focuses on integrating quantum computing elements into the model:
 - **AngleEmbedding:** Encoding classical data into quantum states by applying angle parameters to the qubits. This step transforms classical input features into quantum representations that can be processed by quantum algorithms.
 
 - **StronglyEntanglingLayers:** Implementing quantum gates that create entanglement between qubits. This process introduces complex quantum interactions that enhance the model's capacity to learn intricate patterns and relationships in the data.
+- 
+The QNN integrates both quantum and classical computations to enhance the prediction accuracy by leveraging quantum entanglement and superposition principles.
+The QNN model uses the following structure:
+1.	Input Layer: Takes the input parameters  
+2.	Dense Layer: A classical dense layer with ReLU activation function to process the input features.
+3.	Quantum Layer: A quantum layer using the quantum node (QNode) which embeds the input features into quantum states using angle embedding and applies strongly entangling layers to these quantum states.
+4.	Output Layer: A classical dense layer to generate the final predicted output  .
+The relationship between the input and output can be expressed as:
+
+
 
 ### **4. Model Construction**
 
